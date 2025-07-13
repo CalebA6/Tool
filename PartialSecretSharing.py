@@ -101,10 +101,15 @@ def main():
     print()
     action = input('Action: ')
     if action == '1': 
-        secret = int(input('Secret: '))
+        secret = input('Secret: ').encode()
+        secretNum = 0
+        power = 1
+        for char in secret:
+            secretNum += char * power
+            power *= 256
         required = int(input('Required Parts: '))
         total = int(input('Total Parts: '))
-        shares = make_random_shares(secret, minimum=required, shares=total)
+        shares = make_random_shares(secretNum, minimum=required, shares=total)
 
         print('Partial Secrets:')
         if shares:
@@ -117,7 +122,12 @@ def main():
             num = int(input('Part Index: '))
             part = int(input('Part Value: '))
             parts.append((num, part))
-        print('Secret:', recover_secret(parts))
+        secretNum = recover_secret(parts)
+        secretList = []
+        while secretNum > 0: 
+            secretList.append(secretNum % 256)
+            secretNum //= 256
+        print('Secret:', bytearray(secretList).decode())
     else: 
         print('Invalid action')
 
