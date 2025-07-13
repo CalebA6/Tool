@@ -1,12 +1,4 @@
-"""
-The following Python implementation of Shamir's secret sharing is
-released into the Public Domain under the terms of CC0 and OWFa:
-https://creativecommons.org/publicdomain/zero/1.0/
-http://www.openwebfoundation.org/legal/the-owf-1-0-agreements/owfa-1-0
-
-See the bottom few lines for usage. Tested on Python 2 and 3.
-"""
-
+# Largely copied from Wikipedia
 from __future__ import division
 from __future__ import print_function
 
@@ -97,27 +89,37 @@ def recover_secret(shares, prime=_PRIME):
     Recover the secret from share points
     (points (x,y) on the polynomial).
     """
-    if len(shares) < 3:
-        raise ValueError("need at least three shares")
     x_s, y_s = zip(*shares)
     return _lagrange_interpolate(0, x_s, y_s, prime)
 
 def main():
     """Main function"""
-    secret = 1234
-    shares = make_random_shares(secret, minimum=3, shares=6)
+    print('Partial Secret Sharing')
+    print()
+    print(' 1. Break Secret into Parts')
+    print(' 2. Recover Secret from Parts')
+    print()
+    action = input('Action: ')
+    if action == '1': 
+        secret = int(input('Secret: '))
+        required = int(input('Required Parts: '))
+        total = int(input('Total Parts: '))
+        shares = make_random_shares(secret, minimum=required, shares=total)
 
-    print('Secret:                                                     ',
-          secret)
-    print('Shares:')
-    if shares:
-        for share in shares:
-            print('  ', share)
-
-    print('Secret recovered from minimum subset of shares:             ',
-          recover_secret(shares[:3]))
-    print('Secret recovered from a different minimum subset of shares: ',
-          recover_secret(shares[-3:]))
+        print('Partial Secrets:')
+        if shares:
+            for share in shares:
+                print('  ', share)
+    elif action == '2': 
+        required = int(input('Required Parts: '))
+        parts = []
+        for i in range(required): 
+            num = int(input('Part Index: '))
+            part = int(input('Part Value: '))
+            parts.append((num, part))
+        print('Secret:', recover_secret(parts))
+    else: 
+        print('Invalid action')
 
 if __name__ == '__main__':
     main()
