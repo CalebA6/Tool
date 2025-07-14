@@ -92,44 +92,79 @@ def recover_secret(shares, prime=_PRIME):
     x_s, y_s = zip(*shares)
     return _lagrange_interpolate(0, x_s, y_s, prime)
 
-def main():
-    """Main function"""
-    print('Partial Secret Sharing')
-    print()
-    print(' 1. Break Secret into Parts')
-    print(' 2. Recover Secret from Parts')
-    print()
-    action = input('Action: ')
-    if action == '1': 
-        secret = input('Secret: ').encode()
-        secretNum = 0
-        power = 1
-        for char in secret:
-            secretNum += char * power
-            power *= 256
-        required = int(input('Required Parts: '))
-        total = int(input('Total Parts: '))
-        shares = make_random_shares(secretNum, minimum=required, shares=total)
+def inputNaturalNumber(prompt): 
+	while True: 
+		try: 
+			value = int(input(prompt))
+		except: 
+			print('Please enter a natural number. ')
+			continue
+		if value <= 0: 
+			print('Please enter a natural number. (Natural numbers are greater than zero.)')
+		else: 
+			return value
 
-        print('Partial Secrets:')
-        if shares:
-            for share in shares:
-                print('  ', share)
-    elif action == '2': 
-        required = int(input('Required Parts: '))
-        parts = []
-        for i in range(required): 
-            num = int(input('Part Index: '))
-            part = int(input('Part Value: '))
-            parts.append((num, part))
-        secretNum = recover_secret(parts)
-        secretList = []
-        while secretNum > 0: 
-            secretList.append(secretNum % 256)
-            secretNum //= 256
-        print('Secret:', bytearray(secretList).decode())
-    else: 
-        print('Invalid action')
+def inputWholeNumber(prompt): 
+	while True: 
+		try: 
+			value = int(input(prompt))
+		except: 
+			print('Please enter a whole number. ')
+			continue
+		if value < 0: 
+			print('Please enter a whole number. (Whole numbers cannot be less than zero.)')
+		else: 
+			return value
+
+def main():
+	"""Main function"""
+	print('Partial Secret Sharing')
+	print()
+	print(' 1. Break Secret into Parts')
+	print(' 2. Recover Secret from Parts')
+	print(' 3. Quit')
+	print()
+	while True: 
+		action = input('Action: ')
+		if action == '1': 
+			secret = input('Secret: ').encode()
+			secretNum = 0
+			power = 1
+			for char in secret:
+			    secretNum += char * power
+			    power *= 256
+			while True: 
+				required = inputNaturalNumber('Required Parts: ')
+				total = inputNaturalNumber('Total Parts: ')
+				if total >= 256: 
+					print('Software does not current support splitting secret into more than 255 parts. ') # TODO
+				elif total < required: 
+					print('Cannot require more parts than exist. ')
+				else: 
+					break
+			shares = make_random_shares(secretNum, minimum=required, shares=total)
+
+			print('Partial Secrets:')
+			if shares:
+			    for share in shares:
+			        print('  ', share)
+		elif action == '2': 
+		    required = inputNaturalNumber('Required Parts: ')
+		    parts = []
+		    for i in range(required): 
+		        num = inputNaturalNumber('Part Index: ')
+		        part = inputWholeNumber('Part Value: ')
+		        parts.append((num, part))
+		    secretNum = recover_secret(parts)
+		    secretList = []
+		    while secretNum > 0: 
+		        secretList.append(secretNum % 256)
+		        secretNum //= 256
+		    print('Secret:', bytearray(secretList).decode())
+		elif action != '3': 
+		    print('Please enter 1, 2, or 3. ')
+		    continue
+		break
 
 if __name__ == '__main__':
     main()
