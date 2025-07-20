@@ -107,7 +107,7 @@ def inputNaturalNumber(prompt):
 def inputWholeNumber(prompt): 
 	while True: 
 		try: 
-			value = int(input(prompt))
+			value = int(input(prompt), 16)
 		except: 
 			print('Please enter a whole number. ')
 			continue
@@ -147,7 +147,7 @@ def main():
 			print('Partial Secrets:')
 			if shares:
 			    for share in shares:
-			        print('  ', share)
+			        print('  ', share[0], f'{share[1]:X}')
 		elif action == '2': 
 		    required = inputNaturalNumber('Required Parts: ')
 		    parts = []
