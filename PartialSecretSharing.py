@@ -116,18 +116,22 @@ def inputWholeNumber(prompt):
 		else: 
 			return value
 
-def toHex(value): 
-	return f'{value:X}'
+def toHex(value, minLength = 0): 
+	valueHex = f'{value:X}'
+	while len(valueHex) < minLength: 
+		valueHex = '0' + valueHex
+	return valueHex
 
-def encodeTotalShares(total, shares): 
+def encodeShares(total, shares): 
 	totalStr = toHex(total)
-	totalPrefix = ('F' * len(totalStr)) + '0' + totalStr
+	totalLen = len(totalStr)
+	totalPrefix = ('F' * totalLen) + '0' + totalStr
 	encodedShares = []
 	for share in shares: 
-		encodedShares.append((share[0], int(totalPrefix + toHex(share[1]), 16)))
+		encodedShares.append((share[0], int(totalPrefix + toHex(share[0], totalLen) + toHex(share[1]), 16)))
 	return encodedShares
 
-def decodeTotalShares(share): 
+def decodeShares(share): 
 	shareStr = toHex(share)
 	encodedTotalLen = ''
 	index = 0
@@ -136,8 +140,9 @@ def decodeTotalShares(share):
 		index += 1
 	totalLen = len(encodedTotalLen)
 	total = int(shareStr[(totalLen + 1):((2 * totalLen) + 1)], 16)
-	shareValue = int(shareStr[((2 * totalLen) + 1):], 16)
-	return ((total, shareValue))
+	shareNum = int(shareStr[((2 * totalLen) + 1):((3 * totalLen) + 1)], 16)
+	shareValue = int(shareStr[((3 * totalLen) + 1):], 16)
+	return ((total, shareNum, shareValue))
 
 def main():
 	"""Main function"""
@@ -166,19 +171,18 @@ def main():
 				else: 
 					break
 			shares = make_random_shares(secretNum, minimum=required, shares=total)
-			shares = encodeTotalShares(total, shares)
+			shares = encodeShares(total, shares)
 
 			print('Partial Secrets:')
 			if shares:
 			    for share in shares:
-			        print('  ', share[0], toHex(share[1]))
+			        print('  ', toHex(share[1]))
 		elif action == '2': 
 			required = inputNaturalNumber('Required Parts: ')
 			parts = []
 			for i in range(required): 
-				num = inputNaturalNumber('Part Index: ')
-				part = inputWholeNumber('Part Value: ')
-				(total, share) = decodeTotalShares(part)
+				part = inputWholeNumber('Part: ')
+				(total, num, share) = decodeShares(part)
 				parts.append((num, share))
 			secretNum = recover_secret(parts)
 			secretList = []
