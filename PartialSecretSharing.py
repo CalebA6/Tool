@@ -116,6 +116,29 @@ def inputWholeNumber(prompt):
 		else: 
 			return value
 
+def toHex(value): 
+	return f'{value:X}'
+
+def encodeTotalShares(total, shares): 
+	totalStr = toHex(total)
+	totalPrefix = ('F' * len(totalStr)) + '0' + totalStr
+	encodedShares = []
+	for share in shares: 
+		encodedShares.append((share[0], int(totalPrefix + toHex(share[1]), 16)))
+	return encodedShares
+
+def decodeTotalShares(share): 
+	shareStr = toHex(share)
+	encodedTotalLen = ''
+	index = 0
+	while shareStr[index] != '0': 
+		encodedTotalLen += shareStr[index]
+		index += 1
+	totalLen = len(encodedTotalLen)
+	total = int(shareStr[(totalLen + 1):((2 * totalLen) + 1)], 16)
+	shareValue = int(shareStr[((2 * totalLen) + 1):], 16)
+	return ((total, shareValue))
+
 def main():
 	"""Main function"""
 	print('Partial Secret Sharing')
@@ -143,24 +166,26 @@ def main():
 				else: 
 					break
 			shares = make_random_shares(secretNum, minimum=required, shares=total)
+			shares = encodeTotalShares(total, shares)
 
 			print('Partial Secrets:')
 			if shares:
 			    for share in shares:
-			        print('  ', share[0], f'{share[1]:X}')
+			        print('  ', share[0], toHex(share[1]))
 		elif action == '2': 
-		    required = inputNaturalNumber('Required Parts: ')
-		    parts = []
-		    for i in range(required): 
-		        num = inputNaturalNumber('Part Index: ')
-		        part = inputWholeNumber('Part Value: ')
-		        parts.append((num, part))
-		    secretNum = recover_secret(parts)
-		    secretList = []
-		    while secretNum > 0: 
-		        secretList.append(secretNum % 256)
-		        secretNum //= 256
-		    print('Secret:', bytearray(secretList).decode())
+			required = inputNaturalNumber('Required Parts: ')
+			parts = []
+			for i in range(required): 
+				num = inputNaturalNumber('Part Index: ')
+				part = inputWholeNumber('Part Value: ')
+				(total, share) = decodeTotalShares(part)
+				parts.append((num, share))
+			secretNum = recover_secret(parts)
+			secretList = []
+			while secretNum > 0: 
+			    secretList.append(secretNum % 256)
+			    secretNum //= 256
+			print('Secret:', bytearray(secretList).decode())
 		elif action != '3': 
 		    print('Please enter 1, 2, or 3. ')
 		    continue
