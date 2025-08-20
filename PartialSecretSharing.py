@@ -122,13 +122,14 @@ def toHex(value, minLength = 0):
 		valueHex = '0' + valueHex
 	return valueHex
 
-def encodeShares(total, shares): 
+def encodeShares(total, required, shares): 
 	totalStr = toHex(total)
 	totalLen = len(totalStr)
 	totalPrefix = ('F' * totalLen) + '0' + totalStr
+	prefix = totalPrefix + toHex(required, totalLen)
 	encodedShares = []
 	for share in shares: 
-		encodedShares.append((share[0], int(totalPrefix + toHex(share[0], totalLen) + toHex(share[1]), 16)))
+		encodedShares.append((share[0], int(prefix + toHex(share[0], totalLen) + toHex(share[1]), 16)))
 	return encodedShares
 
 def decodeShares(share): 
@@ -140,9 +141,10 @@ def decodeShares(share):
 		index += 1
 	totalLen = len(encodedTotalLen)
 	total = int(shareStr[(totalLen + 1):((2 * totalLen) + 1)], 16)
-	shareNum = int(shareStr[((2 * totalLen) + 1):((3 * totalLen) + 1)], 16)
-	shareValue = int(shareStr[((3 * totalLen) + 1):], 16)
-	return ((total, shareNum, shareValue))
+	required = int(shareStr[((2 * totalLen) + 1):((3 * totalLen) + 1)], 16)
+	shareNum = int(shareStr[((3 * totalLen) + 1):((4 * totalLen) + 1)], 16)
+	shareValue = int(shareStr[((4 * totalLen) + 1):], 16)
+	return ((total, required, shareNum, shareValue))
 
 def main():
 	"""Main function"""
@@ -171,19 +173,21 @@ def main():
 				else: 
 					break
 			shares = make_random_shares(secretNum, minimum=required, shares=total)
-			shares = encodeShares(total, shares)
+			shares = encodeShares(total, required, shares)
 
 			print('Partial Secrets:')
 			if shares:
 			    for share in shares:
 			        print('  ', toHex(share[1]))
 		elif action == '2': 
-			required = inputNaturalNumber('Required Parts: ')
+			required = 1  # temp value until we get the real value from a share
 			parts = []
-			for i in range(required): 
+			i = 1
+			while i <= required: 
 				part = inputWholeNumber('Part: ')
-				(total, num, share) = decodeShares(part)
+				(total, required, num, share) = decodeShares(part)
 				parts.append((num, share))
+				i += 1
 			secretNum = recover_secret(parts)
 			secretList = []
 			while secretNum > 0: 
