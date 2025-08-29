@@ -180,12 +180,21 @@ def main():
 			    for share in shares:
 			        print('  ', toHex(share[1]))
 		elif action == '2': 
-			required = 1  # temp value until we get the real value from a share
+			# temp values until we get the real values from a share
+			requiredBySet = None
+			totalInSet = None
+
 			parts = []
 			i = 1
-			while i <= required: 
+			while (requiredBySet is None) or (i <= requiredBySet): 
 				part = inputWholeNumber('Part: ')
 				(total, required, num, share) = decodeShares(part)
+				if (totalInSet is None) and (requiredBySet is None): 
+					totalInSet = total
+					requiredBySet = required
+				elif (total != totalInSet) or (required != requiredBySet): 
+					print('The previously entered part does not belong to the same set as the parts entered before it.')
+					continue
 				parts.append((num, share))
 				i += 1
 			secretNum = recover_secret(parts)
