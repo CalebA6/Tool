@@ -107,7 +107,7 @@ def inputNaturalNumber(prompt):
 def inputWholeNumber(prompt): 
 	while True: 
 		try: 
-			value = int(input(prompt), 16)
+			value = fromCode(input(prompt))
 		except: 
 			print('Please enter a whole number. ')
 			continue
@@ -116,34 +116,47 @@ def inputWholeNumber(prompt):
 		else: 
 			return value
 
-def toHex(value, minLength = 0): 
-	valueHex = f'{value:X}'
-	while len(valueHex) < minLength: 
-		valueHex = '0' + valueHex
+ALPHABET = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F']
+digitOrder = {}
+for index, digit in enumerate(ALPHABET): 
+	digitOrder[digit] = index
+
+def toCode(value, minLength = 0): 
+	valueHex = ''
+	while value > 0 or len(valueHex) < minLength: 
+		valueHex = ALPHABET[(value % len(ALPHABET))] + valueHex
+		value //= len(ALPHABET)
 	return valueHex
 
+def fromCode(value): 
+	intValue = 0
+	power = 1
+	for digit in value: 
+		intValue = (intValue * len(ALPHABET)) + digitOrder[digit]
+	return intValue
+
 def encodeShares(total, required, shares): 
-	totalStr = toHex(total)
+	totalStr = toCode(total)
 	totalLen = len(totalStr)
-	totalPrefix = ('F' * totalLen) + '0' + totalStr
-	prefix = totalPrefix + toHex(required, totalLen)
+	totalPrefix = (ALPHABET[-1] * totalLen) + ALPHABET[0] + totalStr
+	prefix = totalPrefix + toCode(required, totalLen)
 	encodedShares = []
 	for share in shares: 
-		encodedShares.append((share[0], int(prefix + toHex(share[0], totalLen) + toHex(share[1]), 16)))
+		encodedShares.append((share[0], fromCode(prefix + toCode(share[0], totalLen) + toCode(share[1]))))
 	return encodedShares
 
 def decodeShares(share): 
-	shareStr = toHex(share)
+	shareStr = toCode(share)
 	encodedTotalLen = ''
 	index = 0
-	while shareStr[index] != '0': 
+	while shareStr[index] != ALPHABET[0]: 
 		encodedTotalLen += shareStr[index]
 		index += 1
 	totalLen = len(encodedTotalLen)
-	total = int(shareStr[(totalLen + 1):((2 * totalLen) + 1)], 16)
-	required = int(shareStr[((2 * totalLen) + 1):((3 * totalLen) + 1)], 16)
-	shareNum = int(shareStr[((3 * totalLen) + 1):((4 * totalLen) + 1)], 16)
-	shareValue = int(shareStr[((4 * totalLen) + 1):], 16)
+	total = fromCode(shareStr[(totalLen + 1):((2 * totalLen) + 1)])
+	required = fromCode(shareStr[((2 * totalLen) + 1):((3 * totalLen) + 1)])
+	shareNum = fromCode(shareStr[((3 * totalLen) + 1):((4 * totalLen) + 1)])
+	shareValue = fromCode(shareStr[((4 * totalLen) + 1):])
 	return ((total, required, shareNum, shareValue))
 
 def main():
@@ -178,7 +191,7 @@ def main():
 			print('Partial Secrets:')
 			if shares:
 			    for share in shares:
-			        print('  ', toHex(share[1]))
+			        print('  ', toCode(share[1]))
 		elif action == '2': 
 			# temp values until we get the real values from a share
 			requiredBySet = None
