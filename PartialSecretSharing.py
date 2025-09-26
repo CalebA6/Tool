@@ -104,17 +104,12 @@ def inputNaturalNumber(prompt):
 		else: 
 			return value
 
-def inputWholeNumber(prompt): 
+def inputPart(prompt): 
 	while True: 
 		try: 
-			value = fromCode(input(prompt))
+			return decodeShares(input(prompt))
 		except: 
-			print('Please enter a whole number. ')
-			continue
-		if value < 0: 
-			print('Please enter a whole number. (Whole numbers cannot be less than zero.)')
-		else: 
-			return value
+			print('Failed to parse part. ')
 
 ALPHABET = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F']
 digitOrder = {}
@@ -146,17 +141,16 @@ def encodeShares(total, required, shares):
 	return encodedShares
 
 def decodeShares(share): 
-	shareStr = toCode(share)
 	encodedTotalLen = ''
 	index = 0
-	while shareStr[index] != ALPHABET[0]: 
-		encodedTotalLen += shareStr[index]
+	while share[index] != ALPHABET[0]: 
+		encodedTotalLen += share[index]
 		index += 1
 	totalLen = len(encodedTotalLen)
-	total = fromCode(shareStr[(totalLen + 1):((2 * totalLen) + 1)])
-	required = fromCode(shareStr[((2 * totalLen) + 1):((3 * totalLen) + 1)])
-	shareNum = fromCode(shareStr[((3 * totalLen) + 1):((4 * totalLen) + 1)])
-	shareValue = fromCode(shareStr[((4 * totalLen) + 1):])
+	total = fromCode(share[(totalLen + 1):((2 * totalLen) + 1)])
+	required = fromCode(share[((2 * totalLen) + 1):((3 * totalLen) + 1)])
+	shareNum = fromCode(share[((3 * totalLen) + 1):((4 * totalLen) + 1)])
+	shareValue = fromCode(share[((4 * totalLen) + 1):])
 	return ((total, required, shareNum, shareValue))
 
 def main():
@@ -200,8 +194,7 @@ def main():
 			parts = []
 			i = 1
 			while (requiredBySet is None) or (i <= requiredBySet): 
-				part = inputWholeNumber('Part: ')
-				(total, required, num, share) = decodeShares(part)
+				(total, required, num, share) = inputPart('Part: ')
 				if (totalInSet is None) and (requiredBySet is None): 
 					totalInSet = total
 					requiredBySet = required
