@@ -218,7 +218,10 @@ def main():
 			while secretNum > 0: 
 			    secretList.append(secretNum % 256)
 			    secretNum //= 256
-			print('Secret:', bytearray(secretList).decode())
+			try: 
+				print('Secret:', bytearray(secretList).decode())
+			except: 
+				print('Failed to retrieve secret. ')
 		elif action != '3': 
 		    print('Please enter 1, 2, or 3. ')
 		    continue
