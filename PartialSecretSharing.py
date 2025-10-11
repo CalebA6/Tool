@@ -92,10 +92,18 @@ def recover_secret(shares, prime=_PRIME):
     x_s, y_s = zip(*shares)
     return _lagrange_interpolate(0, x_s, y_s, prime)
 
+def escapableInput(prompt): 
+	try: 
+		return input(prompt)
+	except KeyboardInterrupt: 
+		exit()
+
 def inputNaturalNumber(prompt): 
 	while True: 
 		try: 
 			value = int(input(prompt))
+		except KeyboardInterrupt: 
+			exit()
 		except: 
 			print('Please enter a natural number. ')
 			continue
@@ -108,6 +116,8 @@ def inputPart(prompt):
 	while True: 
 		try: 
 			return decodeShares(input(prompt))
+		except KeyboardInterrupt: 
+			exit()
 		except: 
 			print('Failed to parse part. ')
 
@@ -162,9 +172,9 @@ def main():
 	print(' 3. Quit')
 	print()
 	while True: 
-		action = input('Action: ')
+		action = escapableInput('Action: ')
 		if action == '1': 
-			secret = input('Secret: ').encode()
+			secret = escapableInput('Secret: ').encode()
 			secretNum = 0
 			power = 1
 			for char in secret:
