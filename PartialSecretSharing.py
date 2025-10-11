@@ -126,24 +126,30 @@ digitOrder = {}
 for index, digit in enumerate(ALPHABET): 
 	digitOrder[digit] = index
 
-def toCode(value, minLength = 0): 
+def toCode(value, minLength = 0, alphabet = ALPHABET): 
 	valueHex = ''
 	while value > 0 or len(valueHex) < minLength: 
-		valueHex = ALPHABET[(value % len(ALPHABET))] + valueHex
-		value //= len(ALPHABET)
+		valueHex = alphabet[(value % len(alphabet))] + valueHex
+		value //= len(alphabet)
 	return valueHex
 
-def fromCode(value): 
+def fromCode(value, alphabet = ALPHABET): 
 	intValue = 0
 	power = 1
 	for digit in value: 
-		intValue = (intValue * len(ALPHABET)) + digitOrder[digit]
+		intValue = (intValue * len(alphabet)) + digitOrder[digit]
 	return intValue
+
+def toReducedCode(value): 
+	return toCode(value, alphabet = ALPHABET[:-1])
+
+def fromReducedCode(value): 
+	return fromCode(value, ALPHABET[:-1])
 
 def encodeShares(total, required, shares): 
 	totalStr = toCode(total)
 	totalLen = len(totalStr)
-	totalPrefix = (ALPHABET[-1] * totalLen) + ALPHABET[0] + totalStr
+	totalPrefix = toReducedCode(totalLen) + ALPHABET[-1] + totalStr
 	prefix = totalPrefix + toCode(required, totalLen)
 	encodedShares = []
 	for share in shares: 
@@ -153,14 +159,15 @@ def encodeShares(total, required, shares):
 def decodeShares(share): 
 	encodedTotalLen = ''
 	index = 0
-	while share[index] != ALPHABET[0]: 
+	while share[index] != ALPHABET[-1]: 
 		encodedTotalLen += share[index]
 		index += 1
-	totalLen = len(encodedTotalLen)
-	total = fromCode(share[(totalLen + 1):((2 * totalLen) + 1)])
-	required = fromCode(share[((2 * totalLen) + 1):((3 * totalLen) + 1)])
-	shareNum = fromCode(share[((3 * totalLen) + 1):((4 * totalLen) + 1)])
-	shareValue = fromCode(share[((4 * totalLen) + 1):])
+	totalLen = fromReducedCode(encodedTotalLen)
+	totalLenPrefixLen = index + 1
+	total = fromCode(share[totalLenPrefixLen:(totalLenPrefixLen + totalLen)])
+	required = fromCode(share[(totalLenPrefixLen + totalLen):(totalLenPrefixLen + (2 * totalLen))])
+	shareNum = fromCode(share[(totalLenPrefixLen + (2 * totalLen)):(totalLenPrefixLen + (3 * totalLen))])
+	shareValue = fromCode(share[(totalLenPrefixLen + (3 * totalLen)):])
 	return ((total, required, shareNum, shareValue))
 
 def main():
