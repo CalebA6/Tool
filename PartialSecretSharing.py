@@ -147,7 +147,7 @@ def encodeShares(total, required, shares):
 	prefix = totalPrefix + toCode(required, totalLen)
 	encodedShares = []
 	for share in shares: 
-		encodedShares.append((share[0], fromCode(prefix + toCode(share[0], totalLen) + toCode(share[1]))))
+		encodedShares.append(prefix + toCode(share[0], totalLen) + toCode(share[1]))
 	return encodedShares
 
 def decodeShares(share): 
@@ -195,7 +195,7 @@ def main():
 			print('Partial Secrets:')
 			if shares:
 			    for share in shares:
-			        print('  ', toCode(share[1]))
+			        print('  ', share)
 		elif action == '2': 
 			# temp values until we get the real values from a share
 			requiredBySet = None
