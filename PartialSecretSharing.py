@@ -121,13 +121,41 @@ def inputPart(prompt):
 		except: 
 			print('Failed to parse part. ')
 
-ALPHABET = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F']
+ALPHABET = [word.strip() for word in open('words.txt').readlines()]
+words = True
 digitOrder = {}
 for index, digit in enumerate(ALPHABET): 
 	digitOrder[digit] = index
 
+class Code: 
+	def __init__(self, value = ([] if words else '')): 
+		self.value = value
+	def __add__(self, other): 
+		if isinstance(other, Code): 
+			return Code(other.value + self.value)
+		else: 
+			if words: 
+				return Code([other] + self.value)  # Runs in O(n). Can that be improved? 
+			else: 
+				return Code(other + self.value)
+	def __radd__(self, other): 
+		if isinstance(other, Code): 
+			return Code(self.value + other.value)
+		else: 
+			if words: 
+				return Code(self.value + [other])  # Runs in O(n). Can that be improved? 
+			else: 
+				return Code(self.value + other)
+	def __len__(self): 
+		return len(self.value)
+	def __str__(self): 
+		if words: 
+			return ' '.join(self.value[::-1])
+		else: 
+			return self.value[::-1]
+
 def toCode(value, minLength = 0, alphabet = ALPHABET): 
-	valueHex = ''
+	valueHex = Code()
 	while value > 0 or len(valueHex) < minLength: 
 		valueHex = alphabet[(value % len(alphabet))] + valueHex
 		value //= len(alphabet)
@@ -157,10 +185,12 @@ def encodeShares(total, required, shares):
 	return encodedShares
 
 def decodeShares(share): 
-	encodedTotalLen = ''
+	if words: 
+		share = share.split()
+	encodedTotalLen = []
 	index = 0
 	while share[index] != ALPHABET[-1]: 
-		encodedTotalLen += share[index]
+		encodedTotalLen.append(share[index])
 		index += 1
 	totalLen = fromReducedCode(encodedTotalLen)
 	totalLenPrefixLen = index + 1
